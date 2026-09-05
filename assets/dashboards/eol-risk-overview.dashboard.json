@@ -1,0 +1,271 @@
+{
+  "version": 21,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# endoflife.ai — EOL Risk Overview\nEnd-of-life risk for every product endoflife.ai tracks, pushed daily by the endoflife.ai exporter as `endoflife.risk_score` (0–100), `endoflife.days_until_eol` and `endoflife.kev_factor_score`. Score methodology: EOL recency, attack surface, CISA KEV exposure, extended-support availability — https://endoflife.ai/risk-score"
+    },
+    "1": {
+      "type": "data",
+      "title": "Products tracked",
+      "query": "timeseries score = avg(endoflife.risk_score), by:{product}\n| summarize products = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "recordField": "products",
+          "label": "Products with a score",
+          "isIconVisible": false,
+          "colorThresholdTarget": "value"
+        }
+      },
+      "querySettings": {}
+    },
+    "2": {
+      "type": "data",
+      "title": "Average EOL Risk Score",
+      "query": "timeseries score = avg(endoflife.risk_score)\n| fieldsAdd avg_score = arrayAvg(score)\n| fields avg_score",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "recordField": "avg_score",
+          "label": "0–100, higher is worse",
+          "isIconVisible": false,
+          "colorThresholdTarget": "value"
+        },
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "avg_score",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≥",
+                "label": "Low",
+                "value": 0
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eea53c)"
+                },
+                "comparator": "≥",
+                "label": "Elevated",
+                "value": 40
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c41425)"
+                },
+                "comparator": "≥",
+                "label": "Critical",
+                "value": 60
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {}
+    },
+    "3": {
+      "type": "data",
+      "title": "Past end of life",
+      "query": "timeseries days = avg(endoflife.days_until_eol), by:{product}\n| fieldsAdd d = arrayAvg(days)\n| filter d < 0\n| summarize past_eol = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "recordField": "past_eol",
+          "label": "Products already past their EOL date",
+          "isIconVisible": false,
+          "colorThresholdTarget": "value"
+        }
+      },
+      "querySettings": {}
+    },
+    "4": {
+      "type": "data",
+      "title": "KEV-exposed products",
+      "query": "timeseries kev = avg(endoflife.kev_factor_score), by:{product}\n| fieldsAdd k = arrayAvg(kev)\n| filter k > 0\n| summarize kev_exposed = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "recordField": "kev_exposed",
+          "label": "Products with an active CISA KEV entry",
+          "isIconVisible": false,
+          "colorThresholdTarget": "value"
+        }
+      },
+      "querySettings": {}
+    },
+    "5": {
+      "type": "data",
+      "title": "Products by risk grade",
+      "query": "timeseries score = avg(endoflife.risk_score), by:{product, grade}\n| summarize products = count(), by:{grade}\n| sort grade asc",
+      "visualization": "categoricalBarChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "position": "right"
+          }
+        }
+      },
+      "querySettings": {}
+    },
+    "6": {
+      "type": "data",
+      "title": "Highest-risk products",
+      "query": "timeseries score = avg(endoflife.risk_score), by:{product, grade, eol_label, kev_active}\n| fieldsAdd risk_score = round(arrayAvg(score))\n| fields product, grade, eol_label, kev_active, risk_score\n| sort risk_score desc\n| limit 25",
+      "visualization": "table",
+      "visualizationSettings": {},
+      "querySettings": {}
+    },
+    "7": {
+      "type": "data",
+      "title": "Approaching end of life (next 90 days)",
+      "query": "timeseries days = avg(endoflife.days_until_next_eol), by:{product, version, eol_date, grade}\n| fieldsAdd days_until_eol = round(arrayAvg(days))\n| filter days_until_eol >= 0 and days_until_eol <= 90\n| fields product, version, eol_date, days_until_eol, grade\n| sort days_until_eol asc",
+      "visualization": "table",
+      "visualizationSettings": {},
+      "querySettings": {}
+    },
+    "8": {
+      "type": "data",
+      "title": "Past end of life and actively exploited (CISA KEV)",
+      "query": "timeseries { kev = avg(endoflife.kev_factor_score), days = avg(endoflife.days_until_eol) }, by:{product, grade}\n| fieldsAdd kev_factor = round(arrayAvg(kev)), days_since_eol = round(arrayAvg(days)) * -1\n| filter kev_factor > 0 and days_since_eol > 0\n| fields product, grade, days_since_eol, kev_factor\n| sort kev_factor desc",
+      "visualization": "table",
+      "visualizationSettings": {},
+      "querySettings": {}
+    },
+    "9": {
+      "type": "data",
+      "title": "EOL Risk Score by product",
+      "query": "timeseries score = avg(endoflife.risk_score), by:{product}\n| fieldsAdd risk_score = round(arrayAvg(score))\n| fields product, risk_score",
+      "visualization": "honeycomb",
+      "visualizationSettings": {
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "risk_score",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≥",
+                "label": "Low",
+                "value": 0
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eea53c)"
+                },
+                "comparator": "≥",
+                "label": "Elevated",
+                "value": 40
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c41425)"
+                },
+                "comparator": "≥",
+                "label": "Critical",
+                "value": 60
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {}
+    },
+    "10": {
+      "type": "data",
+      "title": "Average EOL Risk Score over time",
+      "query": "timeseries avg(endoflife.risk_score)",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "xAxisScaling": "analyzedTimeframe"
+        }
+      },
+      "querySettings": {}
+    }
+  },
+  "layouts": {
+    "0": {
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 2
+    },
+    "1": {
+      "x": 0,
+      "y": 2,
+      "w": 6,
+      "h": 4
+    },
+    "2": {
+      "x": 6,
+      "y": 2,
+      "w": 6,
+      "h": 4
+    },
+    "3": {
+      "x": 12,
+      "y": 2,
+      "w": 6,
+      "h": 4
+    },
+    "4": {
+      "x": 18,
+      "y": 2,
+      "w": 6,
+      "h": 4
+    },
+    "5": {
+      "x": 0,
+      "y": 6,
+      "w": 12,
+      "h": 7
+    },
+    "6": {
+      "x": 0,
+      "y": 13,
+      "w": 12,
+      "h": 9
+    },
+    "7": {
+      "x": 12,
+      "y": 13,
+      "w": 12,
+      "h": 9
+    },
+    "8": {
+      "x": 0,
+      "y": 22,
+      "w": 12,
+      "h": 8
+    },
+    "9": {
+      "x": 12,
+      "y": 6,
+      "w": 12,
+      "h": 7
+    },
+    "10": {
+      "x": 12,
+      "y": 22,
+      "w": 12,
+      "h": 8
+    }
+  }
+}
