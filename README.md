@@ -1,16 +1,18 @@
-# endoflife.ai for Dynatrace
+# endoflife.ai integration for use with Dynatrace®
 
 Brings endoflife.ai's per-product EOL Risk Scores into a Dynatrace environment as
 metrics, so end-of-life exposure can be charted, alerted on and correlated with
 the hosts and services Dynatrace already monitors.
 
-Status: **v0.1** — metrics exporter, dashboard document and alert recipe.
+Status: **v1.0** — metrics exporter, dashboard document and alert recipe.
 Runs against any Dynatrace SaaS environment with a `metrics.ingest` token.
 Not yet listed on the Dynatrace Hub. Questions: partners@endoflife.ai.
 
 Data: [endoflife.ai](https://endoflife.ai) — end-of-life dates for 500+
-products, verified against vendor sources, with the
-[EOL Risk Score](https://endoflife.ai/risk-score) (0–100) on every version.
+products, with the [EOL Risk Score](https://endoflife.ai/risk-score) (0–100)
+on every version. Every date names its source: for the products endoflife.ai
+verifies directly it is the vendor's own lifecycle page, for the rest it is the
+open endoflife.date dataset, and the API says which.
 
 ## What it sends
 
@@ -55,7 +57,7 @@ Schedule the full push daily to track the source rebuild.
 
 ## Consumption
 
-One full run is about 1,600 data points (roughly 540 products × 3 metrics). The
+One full run is about 2,000 data points (500+ products, four metric keys). The
 script sends once, reports the API's `linesOk` / `linesInvalid` counts, and exits;
 it never loops or retries on its own.
 
@@ -81,8 +83,8 @@ dashboard timeframe that contains at least one push.
 A custom alert (Settings → Analyze and alert → Alerts → Custom alerts) named
 "[endoflife.ai] Product at Critical EOL Risk": static threshold on
 `timeseries score = max(endoflife.risk_score), by:{product}`, alert when the
-metric is above 60 (the Critical band), event name
-"endoflife.ai: {product} EOL Risk Score is Critical (60 or above)". Create it
+metric is above 80 (grade F, Critical risk on the endoflife.ai scale), event name
+"endoflife.ai: {product} EOL Risk Score is Critical (above 80)". Create it
 once in Settings; a settings-object export will follow in a later release.
 
 ## Files
@@ -93,11 +95,23 @@ once in Settings; a settings-object export will follow in a later release.
 
 ## Changelog
 
+- **v1.0.0 (2026-09-29)** — alert recipe threshold corrected to above 80
+  (grade F, Critical risk); the earlier text said 60, which is the top of grade C
+  on the endoflife.ai scale. Dashboard default timeframe of seven days so the
+  daily write is always in view. Data-source wording made exact. No change to
+  the metrics or the exporter's behaviour.
+
 - **v0.1.0 (2026-09-05)** — first public release: exporter with four metric
   keys (about 1,900 data points per run across 540+ products, verified 0
   rejected on ingest), the 11-tile EOL Risk Overview dashboard, the
   critical-risk alert recipe. Previously developed inside the
   [endoflife-site](https://github.com/endoflife-ai/endoflife-site) repository.
+
+## Trademarks
+
+Dynatrace and any accompanying logos are either registered trademarks or
+trademarks of Dynatrace LLC or its subsidiaries in the United States or in
+other countries. endoflife.ai is not affiliated with or endorsed by Dynatrace LLC.
 
 ## License
 

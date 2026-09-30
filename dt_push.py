@@ -43,7 +43,7 @@ import urllib.error
 
 SCORES_URL = "https://endoflife.ai/scores.json"
 SCANNER_URL = "https://endoflife.ai/scanner-db.json"  # per-cycle EOL dates -> next upcoming EOL per product
-USER_AGENT = "endoflife-ai-dynatrace-exporter/0.1"
+USER_AGENT = "endoflife-ai-dynatrace-exporter/1.0"
 MAX_BODY_BYTES = 900_000  # API limit is 1 MB per request; stay well under it
 
 
