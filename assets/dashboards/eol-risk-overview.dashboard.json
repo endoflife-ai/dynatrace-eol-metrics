@@ -128,7 +128,7 @@
     "7": {
       "type": "data",
       "title": "Approaching end of life (next 90 days)",
-      "query": "timeseries days = avg(endoflife.days_until_next_eol), by:{product, version, eol_date, grade}\n| fieldsAdd days_until_eol = round(arrayAvg(days))\n| filter days_until_eol >= 0 and days_until_eol <= 90\n| fields product, version, eol_date, days_until_eol, grade\n| sort days_until_eol asc",
+      "query": "timeseries days = avg(endoflife.days_until_next_eol), by:{product, version, eol_date, grade}, from: now()-30h | fieldsAdd days_until_eol = round(arrayLast(days)) | filter eol_date >= formatTimestamp(now(), format:\"yyyy-MM-dd\") and days_until_eol >= 0 and days_until_eol <= 90 | fields product, version, eol_date, days_until_eol, grade | sort days_until_eol asc, product asc",
       "visualization": "table",
       "visualizationSettings": {},
       "querySettings": {}
