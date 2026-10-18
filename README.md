@@ -8,7 +8,7 @@ Status: **v1.0** — metrics exporter, dashboard document and alert recipe.
 Runs against any Dynatrace SaaS environment with a `metrics.ingest` token.
 Not yet listed on the Dynatrace Hub. Questions: partners@endoflife.ai.
 
-Data: [endoflife.ai](https://endoflife.ai) — end-of-life dates for 500+
+Data: [endoflife.ai](https://endoflife.ai) — end-of-life dates for 600+
 products, with the [EOL Risk Score](https://endoflife.ai/risk-score) (0–100)
 on every version. Every date names its source: for the products endoflife.ai
 verifies directly it is the vendor's own lifecycle page, for the rest it is the
@@ -19,15 +19,15 @@ open endoflife.date dataset, and the API says which.
 | Metric | Type | Meaning |
 | --- | --- | --- |
 | `endoflife.risk_score` | gauge, 0–100 | EOL Risk Score; higher means more dangerous to keep running |
-| `endoflife.days_until_eol` | gauge, days | Days until the product's end-of-life date (negative once it has passed) |
+| `endoflife.days_until_eol` | gauge, days | Days until (negative: since) the end-of-life date the risk score is based on: the most recent past end once any line has ended. For the next deadline use `endoflife.days_until_next_eol` |
 | `endoflife.kev_factor_score` | gauge, 0–20 | The CISA Known Exploited Vulnerabilities component of the score, in isolation |
 | `endoflife.days_until_next_eol` | gauge, days | Days until the product's next upcoming cycle end of life (adds `version` and `eol_date` dimensions); the "approaching" signal |
 
 Dimensions on every data point: `product` (endoflife.ai slug), `grade` (A–F),
 `eol_label`, `kev_active` (`true`/`false`); `days_until_eol` also carries `eol_date`.
 
-Source: `https://endoflife.ai/scores.json`, rebuilt daily from vendor-verified
-lifecycle data. The exporter consumes the same public feed any customer can.
+Source: `https://endoflife.ai/scores.json`, rebuilt at every endoflife.ai build
+(at least daily); each date is labelled with its source on the site. The exporter consumes the same public feed any customer can.
 
 ## Setup
 
@@ -57,7 +57,7 @@ Schedule the full push daily to track the source rebuild.
 
 ## Consumption
 
-One full run is about 2,000 data points (500+ products, four metric keys). The
+One full run is about 2,000 data points (600+ products, four metric keys). The
 script sends once, reports the API's `linesOk` / `linesInvalid` counts, and exits;
 it never loops or retries on its own.
 
@@ -104,8 +104,8 @@ once in Settings; a settings-object export will follow in a later release.
 - **v0.1.0 (2026-09-05)** — first public release: exporter with four metric
   keys (about 1,900 data points per run across 540+ products, verified 0
   rejected on ingest), the 11-tile EOL Risk Overview dashboard, the
-  critical-risk alert recipe. Previously developed inside the
-  [endoflife-site](https://github.com/endoflife-ai/endoflife-site) repository.
+  critical-risk alert recipe. Previously developed inside endoflife.ai's
+  private site repository.
 
 ## Trademarks
 

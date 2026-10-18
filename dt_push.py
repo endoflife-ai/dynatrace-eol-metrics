@@ -8,7 +8,8 @@ risk can be charted, alerted on and joined to host data inside Dynatrace.
 
 Metrics emitted (one data point per product per run):
     endoflife.risk_score        0-100 EOL Risk Score (higher = more dangerous)
-    endoflife.days_until_eol    days until (negative = since) the product's EOL date
+    endoflife.days_until_eol    days until (negative = since) the EOL date the score is based
+                                on (the most recent past end once any line has ended)
     endoflife.kev_factor_score  the CISA KEV component of the score in isolation (0-20)
     endoflife.days_until_next_eol  days until the product's NEXT cycle end of life (upcoming
                                 deadlines; dimensions add version + eol_date)
