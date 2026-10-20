@@ -57,7 +57,7 @@ Schedule the full push daily to track the source rebuild.
 
 ## Consumption
 
-One full run is about 2,000 data points (600+ products, four metric keys). The
+One full run is about 2,000 data points (700+ products, four metric keys). The
 script sends once, reports the API's `linesOk` / `linesInvalid` counts, and exits;
 it never loops or retries on its own.
 
